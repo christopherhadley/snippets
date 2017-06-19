@@ -41,7 +41,22 @@ cat < foo.csv >> 1.csv
 # Copy first 50 lines of one file to a new one
 head -50 old.csv >> new.csv
 
+# Copy first line (e.g. field names) of one file to another
+head -1 file1.csv >> headers.csv
+mv file2.csv file2.csv.000
+cat < headers.csv >> file2.csv.1
+mv file2.csv.1 file2.csv
+# there may be a better one-liner using sed .... 
 
+gsed -i '1s/^/foo\n/gm; $s/$/\nbar/gm' filename.txt
+#This transforms the file:
+#asdf
+#qwer
+#to the file:
+#foo
+#asdf
+#qwer
+#bar
 
 # RENAMING FILES
 
@@ -57,18 +72,13 @@ for f in *.csv; do echo mv "$f" "${f/foo/bar}"; done
 rename 's/^linux_//' linux_*.mp4
 
 
-
-
-
 # FINDING
 
 # find files in all directories below the current: 
  find . -name 'filenamewearelookingfor'
 
-
-
-
-
+# Total usage of a number of files in a directory structure:
+du -ch ./dir/*.jpg | grep total
 
 
 # GIT STUFF

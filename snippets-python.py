@@ -15,6 +15,9 @@ features = pd.concat([train, test], keys=['train', 'test'])
 train_features = features.loc['train'].drop('Id', axis=1).select_dtypes(include=[np.number]).values
 test_features = features.loc['test'].drop('Id', axis=1).select_dtypes(include=[np.number]).values
 
+# concat tables and reset index to run over the seam: 
+pd.concat(['train', 'test'], ignore_index = True)
+
 
 ##################
 data = pandas.read_csv(file, sep='\t', quoting=csv.QUOTE_NONE,
@@ -43,11 +46,22 @@ def df_uniques(df):
     list_of_features = sorted(list_of_features, key = lambda x: x[1], reverse = True)
     return list_of_features
 
+# To call the above, for only a few columns:
+df_uniques(df[['col_a', 'col_b']])
+
 # List of columns with nulls in:
 [col for col in df.columns if df[col].isnull().any()]
 
 # Rows with any nulls
 df.loc[:, df.isnull().any()]
+
+# Rows with nulls everywhere (returned as a new df)
+nans = df.ix[df.isnull().all(1)]
+
+# Comparing list of headers of test and train datasets (i.e. find which fields are absent in test set, and hence which are the target fields)
+headers_test = list(test)
+headers_train = list(train)
+[field for field in headers_test if field not in headers_train]
 
 # Drop duplicates
 def df_drop_duplicates(df):
@@ -62,17 +76,23 @@ def df_drop_duplicates(df):
 stations.dropna(subset=['Latitude', 'Longitude'], how='all', inplace = True)
 
 
-# concat tables and reset index to run over the seam: 
-pd.concat(['train', 'test'], ignore_index = True)
-
 # Frequencies of unique values of a single column: 
 data['Title'].value_counts()
-
 
 # return a series from a single column:
 train['Title']
 # return a df from a single column: 
 train[['Title']]
+
+# Make several changes at once in a data column (example: replace NESW with +-, useful for latlon coords): 
+def updatestring(string):
+    import re
+    rdict = rdict = {'N ': '+','S ': '-','E ': '+','W ': '-'}
+    robj = re.compile('|'.join(rdict.keys()))
+    replaced = robj.sub(lambda x: rdict[x.group(0)], string)
+    return replaced
+# then: 
+df['latlon'] = df['latlon'].apply((lambda x: updatestring(x)))
 
 
 #################
@@ -86,7 +106,6 @@ Numpy
 # Filter an array
 outlier_bonus = data[data > 1e7][1]
 
-
 # Filter a dictionary
 #  based on value criteria - e.g. bonus is a given value
 data_dict_filter = {k:v for (k,v) in data_dict.items() if v['bonus'] == outlier_bonus}
@@ -95,10 +114,8 @@ data_dict_filter = {k:v for (k,v) in data_dict.items() if v['bonus'] == outlier_
 data_dict_filter = {k:v for (k,v) in data_dict.items() if str(k)[:1] == 'E'}
 
 
-
 # find index of smallest value of a list - http://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list
 import numpy as np
 index_min = np.argmin(values)
 # or:
 index_min = min(xrange(len(values)), key=values.__getitem__)
-
