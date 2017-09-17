@@ -1,9 +1,7 @@
 Snippets - Python
 
 #################
-
 PANDAS
-
 #################
 
 BASICS
@@ -56,7 +54,7 @@ df_uniques(df[['col_a', 'col_b']])
 df.loc[:, df.isnull().any()]
 
 # Rows with nulls everywhere (returned as a new df)
-nans = df.ix[df.isnull().all(1)]
+nans = df.loc[df.isnull().all(1)]
 
 # Comparing list of headers of test and train datasets (i.e. find which fields are absent in test set, and hence which are the target fields)
 headers_test = list(test)
@@ -94,6 +92,22 @@ def updatestring(string):
 # then: 
 df['latlon'] = df['latlon'].apply((lambda x: updatestring(x)))
 
+######### Dates
+
+# Set a column as a date:
+df['date'] = pd.to_datetime(df['date'])
+
+###### percentages
+# If we have a field that has xx.x%, remove this symbol:
+df['int_rate'] = df['int_rate'].str.extract('(\d+.\d)')
+
+## Fill NAs with modeal value
+most_freq = df[col].dropna().mode()[0]
+df[col].fillna(most_freq)
+
+# Fill every column with the modal value
+df = df.apply(lambda x:x.fillna(x.value_counts().index[0]))
+
 
 #################
 Numpy
@@ -106,6 +120,12 @@ Numpy
 # Filter an array
 outlier_bonus = data[data > 1e7][1]
 
+
+
+#################
+Dictionaries
+#################
+
 # Filter a dictionary
 #  based on value criteria - e.g. bonus is a given value
 data_dict_filter = {k:v for (k,v) in data_dict.items() if v['bonus'] == outlier_bonus}
@@ -113,6 +133,10 @@ data_dict_filter = {k:v for (k,v) in data_dict.items() if v['bonus'] == outlier_
 # based on key criteria - e.g. key begins with 'E'
 data_dict_filter = {k:v for (k,v) in data_dict.items() if str(k)[:1] == 'E'}
 
+
+#################
+Lists
+#################
 
 # find index of smallest value of a list - http://stackoverflow.com/questions/2474015/getting-the-index-of-the-returned-max-or-min-item-using-max-min-on-a-list
 import numpy as np

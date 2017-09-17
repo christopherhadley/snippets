@@ -11,3 +11,6 @@ source activate py27
 source deactive py27
 
 #You can add these to .bash_rc
+
+# Automatically generate a requirements.txt file with all packages in env listed:
+pip freeze > requirements.txt
