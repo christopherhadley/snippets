@@ -16,6 +16,11 @@ test_features = features.loc['test'].drop('Id', axis=1).select_dtypes(include=[n
 # concat tables and reset index to run over the seam: 
 pd.concat(['train', 'test'], ignore_index = True)
 
+# Comparing list of headers of test and train datasets (i.e. find which fields are absent in test set, and hence which are the target fields)
+headers_test = list(test)
+headers_train = list(train)
+[field for field in headers_test if field not in headers_train]
+
 
 ##################
 data = pandas.read_csv(file, sep='\t', quoting=csv.QUOTE_NONE,
@@ -56,11 +61,6 @@ df.loc[:, df.isnull().any()]
 # Rows with nulls everywhere (returned as a new df)
 nans = df.loc[df.isnull().all(1)]
 
-# Comparing list of headers of test and train datasets (i.e. find which fields are absent in test set, and hence which are the target fields)
-headers_test = list(test)
-headers_train = list(train)
-[field for field in headers_test if field not in headers_train]
-
 # Drop duplicates
 def df_drop_duplicates(df):
     rows_init = df.shape[0]
@@ -73,14 +73,23 @@ def df_drop_duplicates(df):
 # Drop NAs - drop rows where Latitude and/or Longitude are NULL
 stations.dropna(subset=['Latitude', 'Longitude'], how='all', inplace = True)
 
+## Fill NAs with modal value
+most_freq = df[col].dropna().mode()[0]
+df[col].fillna(most_freq)
+
+# Fill every column with the modal value
+df = df.apply(lambda x:x.fillna(x.value_counts().index[0]))
 
 # Frequencies of unique values of a single column: 
 data['Title'].value_counts()
+
+
 
 # return a series from a single column:
 train['Title']
 # return a df from a single column: 
 train[['Title']]
+
 
 # Make several changes at once in a data column (example: replace NESW with +-, useful for latlon coords): 
 def updatestring(string):
@@ -101,12 +110,6 @@ df['date'] = pd.to_datetime(df['date'])
 # If we have a field that has xx.x%, remove this symbol:
 df['int_rate'] = df['int_rate'].str.extract('(\d+.\d)')
 
-## Fill NAs with modeal value
-most_freq = df[col].dropna().mode()[0]
-df[col].fillna(most_freq)
-
-# Fill every column with the modal value
-df = df.apply(lambda x:x.fillna(x.value_counts().index[0]))
 
 
 #################
@@ -121,7 +124,6 @@ Numpy
 outlier_bonus = data[data > 1e7][1]
 
 
-
 #################
 Dictionaries
 #################
@@ -132,7 +134,6 @@ data_dict_filter = {k:v for (k,v) in data_dict.items() if v['bonus'] == outlier_
 
 # based on key criteria - e.g. key begins with 'E'
 data_dict_filter = {k:v for (k,v) in data_dict.items() if str(k)[:1] == 'E'}
-
 
 #################
 Lists
